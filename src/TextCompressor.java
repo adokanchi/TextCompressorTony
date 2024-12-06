@@ -29,9 +29,28 @@
  */
 public class TextCompressor {
 
+    final static int NUM_STORED_WORDS = 100;
+
     private static void compress() {
 
         // TODO: Complete the compress() method
+        String[] firstWords = new String[NUM_STORED_WORDS];
+
+        for (int i = 0; i < NUM_STORED_WORDS; i++) {
+            String word = "";
+            while (true) {
+                char nextChar = BinaryStdIn.readChar();
+                if (nextChar == ' ') {
+                    firstWords[i] = word;
+                    break;
+                }
+                else {
+                    word += nextChar;
+                }
+            }
+        }
+
+
 
         BinaryStdOut.close();
     }
