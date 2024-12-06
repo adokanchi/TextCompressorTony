@@ -29,7 +29,10 @@
  */
 public class TextCompressor {
 
-    final static int NUM_STORED_WORDS = 100;
+
+    final static int BLOCK_LENGTH = 8;
+    final static int NUM_CHARS = 75;
+    final static int NUM_STORED_WORDS = (1 << BLOCK_LENGTH) - NUM_CHARS;
 
     private static void compress() {
 
