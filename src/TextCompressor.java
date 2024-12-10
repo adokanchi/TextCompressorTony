@@ -45,11 +45,11 @@ public class TextCompressor {
         while (index < len) {
             String prefix = tree.getLongestPrefix(text.substring(index));
             BinaryStdOut.write(tree.lookup(prefix));
-            if (index + prefix.length() < text.length()) {
-                tree.insert(prefix + text.charAt(index + prefix.length()), code);
+            int nextIndex = index + prefix.length();
+            if (nextIndex < text.length()) {
+                tree.insert(prefix + text.charAt(nextIndex), code++);
             }
-            code++;
-            index += prefix.length();
+            index = nextIndex;
         }
 
         BinaryStdOut.write(EOF);
@@ -57,8 +57,31 @@ public class TextCompressor {
     }
 
     private static void expand() {
+        final int MAX_NUM_CODES = 1024;
+        String map[] = new String[MAX_NUM_CODES];
+
+        for (int i = 0; i < 255; i++) {
+            map[i] = "" + (char) i;
+        }
+
+        int code = 257;
+
         String text = BinaryStdIn.readString();
-        BinaryStdOut.write(text);
+        int index = 0;
+        while (true) {
+            int nextCode = Integer.parseInt("" + text.charAt(index) + text.charAt(index + 1));
+            if (nextCode == EOF) break;
+            if (map[nextCode] == null) {
+                // TODO: Edge Case
+            }
+            else {
+                BinaryStdOut.write(map[nextCode]);
+            }
+            map[code] = map[nextCode] + text.charAt(index + 2);
+            index += 2;
+
+        }
+
         BinaryStdOut.close();
     }
 
