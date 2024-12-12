@@ -60,12 +60,8 @@ public class TextCompressor {
     }
 
     private static void expand() {
-        String text = BinaryStdIn.readString();
-        System.out.println(text);
-
-        /*
         String[] map = new String[MAX_NUM_CODES];
-
+        // Add all single characters
         for (int i = 0; i < 255; i++) {
             map[i] = "" + (char) i;
         }
@@ -74,23 +70,31 @@ public class TextCompressor {
 
         String text = BinaryStdIn.readString();
         int index = 0;
+
+        int currCode = 0;
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            currCode += Integer.parseInt("" + text.charAt(index++), 2);
+        }
+        String currString = map[currCode];
+
         while (true) {
-            int currCode = Integer.parseInt(text.substring(index, index + CODE_LENGTH));
-            String currString = map[currCode];
+            // Write stored string
+            BinaryStdOut.write(currString);
 
-            BinaryStdOut.write(currString, CODE_LENGTH);
-
-            int nextCode = Integer.parseInt(text.substring(index + CODE_LENGTH, index + 2 * CODE_LENGTH));
-            if (nextCode == EOF) {
-                break;
+            // Read next string
+            int nextCode = 0;
+            for (int i = 0; i < CODE_LENGTH; i++) {
+                nextCode += Integer.parseInt("" + text.charAt(index++), 2);
             }
+            if (nextCode == EOF) break;
             String nextString = map[nextCode];
 
-            map[code] = currString + nextString.charAt(0);
-            code++;
+            // Add the next code/string pair to map
+            map[code++] = currString + nextString.charAt(0);
+
+            currString = nextString;
         }
 
-        */
         BinaryStdOut.close();
     }
 
