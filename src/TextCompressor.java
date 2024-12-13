@@ -39,18 +39,18 @@ public class TextCompressor {
         for (int i = 0; i < 255; i++) {
             tree.insert("" + (char) i, i);
         }
-        int code = 257;
+        int codeIndex = 257;
 
         String text = BinaryStdIn.readString();
 
         int index = 0;
         int len = text.length();
         while (index < len) {
-            String prefix = tree.getLongestPrefix(text.substring(index));
+            String prefix = tree.getLongestPrefix(text, index);
             BinaryStdOut.write(tree.lookup(prefix), CODE_LENGTH);
             int nextIndex = index + prefix.length();
-            if (nextIndex < text.length()) {
-                tree.insert(prefix + text.charAt(nextIndex), code++);
+            if (nextIndex < len) {
+                tree.insert(prefix + text.charAt(nextIndex), codeIndex++);
             }
             index = nextIndex;
         }
@@ -69,11 +69,12 @@ public class TextCompressor {
         int code = 257;
 
         String text = BinaryStdIn.readString();
+        int len = text.length();
         int index = 0;
 
         int currCode = 0;
         for (int i = 0; i < CODE_LENGTH; i++) {
-            currCode += Integer.parseInt("" + text.charAt(index++), 2);
+            if (index < len) currCode += Integer.parseInt("" + text.charAt(index++), 2);
         }
         String currString = map[currCode];
 
@@ -84,7 +85,7 @@ public class TextCompressor {
             // Read next string
             int nextCode = 0;
             for (int i = 0; i < CODE_LENGTH; i++) {
-                nextCode += Integer.parseInt("" + text.charAt(index++), 2);
+                if (index < len) nextCode += Integer.parseInt("" + text.charAt(index++), 2);
             }
             if (nextCode == EOF) break;
             String nextString = map[nextCode];
@@ -92,6 +93,7 @@ public class TextCompressor {
             // Add the next code/string pair to map
             map[code++] = currString + nextString.charAt(0);
 
+            // Move to next string
             currString = nextString;
         }
 
