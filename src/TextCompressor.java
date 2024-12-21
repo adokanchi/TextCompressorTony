@@ -29,72 +29,69 @@
  */
 public class TextCompressor {
     private static final int EOF = 256;
-    private static final int CODE_LENGTH = 12;
-    private static final int MAX_NUM_CODES = 1 << CODE_LENGTH - 1;
+    private static final int BLOCK_LEN = 12;
+    private static final int MAX_CODES = 1 << BLOCK_LEN;
 
     private static void compress() {
-
+        // Read in all 256 codes from ASCII
         TST tree = new TST();
-        // Add all codes from extended ASCII
-        for (int i = 0; i < 255; i++) {
+        for (int i = 0; i < EOF; i++) {
             tree.insert("" + (char) i, i);
         }
-        int codeIndex = 257;
 
         String text = BinaryStdIn.readString();
 
         int index = 0;
-        int len = text.length();
-        while (index < len) {
+        int length = text.length();
+        int codeIndex = EOF + 1;
+        while (index < length) {
             String prefix = tree.getLongestPrefix(text, index);
-            BinaryStdOut.write(tree.lookup(prefix), CODE_LENGTH);
-            int nextIndex = index + prefix.length();
-            if (nextIndex < len) {
-                tree.insert(prefix + text.charAt(nextIndex), codeIndex++);
+            BinaryStdOut.write(tree.lookup(prefix), BLOCK_LEN);
+            int len = prefix.length();
+            if (index + len < length && codeIndex < MAX_CODES) {
+                char lookahead = text.charAt(index + len);
+                prefix += lookahead;
+                tree.insert(prefix, codeIndex++);
             }
-            index = nextIndex;
+            index += len;
         }
 
-        BinaryStdOut.write(EOF, CODE_LENGTH);
+        BinaryStdOut.write(EOF, BLOCK_LEN);
+
+
         BinaryStdOut.close();
     }
 
     private static void expand() {
-        String[] map = new String[MAX_NUM_CODES];
-        // Add all single characters
-        for (int i = 0; i < 255; i++) {
-            map[i] = "" + (char) i;
+
+        // Read in all 256 codes from ASCII
+        String[] prefixes = new String[MAX_CODES];
+        for (int i = 0; i < EOF; i++) {
+            prefixes[i] = "" + (char) i;
         }
 
-        int code = 257;
-
-        String text = BinaryStdIn.readString();
-        int len = text.length();
-        int index = 0;
-
-        int currCode = 0;
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            if (index < len) currCode += Integer.parseInt("" + text.charAt(index++), 2);
-        }
-        String currString = map[currCode];
-
-        while (true) {
-            // Write stored string
-            BinaryStdOut.write(currString);
-
-            // Read next string
-            int nextCode = 0;
-            for (int i = 0; i < CODE_LENGTH; i++) {
-                if (index < len) nextCode += Integer.parseInt("" + text.charAt(index++), 2);
-            }
+        int codeIndex = EOF + 1;
+        String lastPrefix = prefixes[BinaryStdIn.readInt(BLOCK_LEN)];
+        BinaryStdOut.write(lastPrefix);
+        while (!BinaryStdIn.isEmpty()) {
+            int nextCode = BinaryStdIn.readInt(BLOCK_LEN);
             if (nextCode == EOF) break;
-            String nextString = map[nextCode];
-
-            // Add the next code/string pair to map
-            map[code++] = currString + nextString.charAt(0);
-
-            // Move to next string
-            currString = nextString;
+            String nextPrefix = "";
+            if (nextCode < codeIndex) {
+                nextPrefix = prefixes[nextCode];
+            }
+            else if (nextCode == codeIndex) {
+                nextPrefix = lastPrefix + lastPrefix.charAt(0);
+            }
+            else {
+                // Should never reach here, only here for testing
+                for (int i = 0; i < 1000; i++) BinaryStdOut.write(false);
+            }
+            if (codeIndex < MAX_CODES) {
+                prefixes[codeIndex++] = lastPrefix + nextPrefix.charAt(0);
+            }
+            lastPrefix = nextPrefix;
+            BinaryStdOut.write(lastPrefix);
         }
 
         BinaryStdOut.close();
